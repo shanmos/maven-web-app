@@ -1,0 +1,304 @@
+openapi: 3.0.0
+info:
+  title: Gaming Wallet API
+  version: 1.0.0
+  description: APIs for managing gaming wallets for Xbox integration.
+
+servers:
+  - url: https://ogoja.gaming.com/v1
+    description: Production server end point
+
+tags:
+  - Gaming Wallet
+  - Ogoja Backend
+
+paths:
+  /api/wallet/add-funds:
+    post:
+      summary: Add Funds to User's Wallet
+      description: Allows Xbox to automatically add funds to a user's wallet when a matching achievement is made.
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          description: The unique identifier for the user.
+          schema:
+            type: string
+        - name: amount
+          in: query
+          required: true
+          description: The amount to add to the user's wallet.
+          schema:
+            type: number
+            format: float
+      responses:
+        '200':
+          description: Funds added successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddFundsResponse'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardErrorResponse'
+
+  /api/notifications/push:
+    post:
+      summary: Send Push Notification
+      description: Enables Xbox to send a push notification to the console when a user earns a reward.
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          description: The unique identifier for the user.
+          schema:
+            type: string
+        - name: message
+          in: query
+          required: true
+          description: The push notification message.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Push notification sent successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PushNotificationResponse'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardErrorResponse'
+  
+  /api/notifications/email:
+    post:
+      summary: Send Email Notification
+      description: Allows Xbox to send an email notification to the user when they hit specific wallet milestones.
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          description: The unique identifier for the user.
+          schema:
+            type: string
+        - name: amount
+          in: query
+          required: true
+          description: The milestone amount reached.
+          schema:
+            type: number
+            format: float
+      responses:
+        '200':
+          description: Email notification sent successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailNotificationResponse'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardErrorResponse'
+
+  /api/wallet/user/{user_id}:
+    get:
+      summary: Get Wallet Information
+      description: Retrieves the wallet information for a user, including their current balance.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The unique identifier for the user.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User wallet information retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletInformationResponse'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardErrorResponse'
+      
+  /api/wallet/transactions/{user_id}:
+    get:
+      summary: Get Wallet Transaction History
+      description: Retrieves the history of funds added or spent in the user's wallet.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The unique identifier for the user.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Wallet transaction history retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletTransactionHistoryResponse'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardErrorResponse'
+
+  /api/wallet/apply-earnings:
+    post:
+      summary: Apply Earnings at Checkout
+      description: Allows users to apply their wallet earnings when making purchases, such as buying games or in-game products.
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          description: The unique identifier for the user.
+          schema:
+            type: string
+        - name: amount
+          in: query
+          required: true
+          description: The amount to apply from the wallet.
+          schema:
+            type: number
+            format: float
+      responses:
+        '200':
+          description: Earnings applied successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EarningsAppliedResponse'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardErrorResponse'
+
+
+
+components:
+  schemas:
+    AddFundsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: The status of the request (e.g., "success").
+      example:
+        status: "success"
+
+    PushNotificationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: The status of the request (e.g., "success").
+      example:
+        status: "success"
+
+
+    EmailNotificationResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: The status of the request (e.g., "success").
+      example:
+        status: "success"
+    
+    WalletInformationResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: The unique identifier for the user.
+        balance:
+          type: number
+          format: float
+          description: The current balance in the user's wallet.
+        last_updated:
+          type: string
+          format: date-time
+          description: The timestamp when the wallet information was last updated.
+      example:
+        user_id: "123456"
+        balance: 50.0
+        last_updated: "2023-10-10T12:00:00Z"
+
+    WalletTransactionHistoryResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: The unique identifier for the user.
+        transactions:
+          type: array
+          items:
+            type: object
+            properties:
+              transaction_id:
+                type: string
+                description: The unique identifier for the transaction.
+              amount:
+                type: number
+                format: float
+                description: The transaction amount.
+              type:
+                type: string
+                description: The type of transaction (e.g., "credit" or "debit").
+              timestamp:
+                type: string
+                format: date-time
+                description: The timestamp of the transaction.
+      example:
+        user_id: "123456"
+        transactions:
+          - transaction_id: "txn1"
+            amount: 10.0
+            type: "credit"
+            timestamp: "2023-10-10T12:00:00Z"
+          - transaction_id: "txn2"
+            amount: 5.0
+            type: "debit"
+            timestamp: "2023-10-11T14:00:00Z"
+
+    EarningsAppliedResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: The status of the earnings application (e.g., "success").
+      example:
+        status: "success"
+        
+    StandardErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: The status of the error (e.g., "error").
+        message:
+          type: string
+          description: A message describing the error.
+      example:
+        status: "error"
+        message: "Invalid user ID"
+
+
+
